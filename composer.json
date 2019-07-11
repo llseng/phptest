@@ -1,0 +1,20 @@
+{
+	"require" : {
+		"php" : ">=7.0.0",
+        "ext-mysqli" : "*",
+		"monolog/monolog": "^1.24",
+		"workerman/workerman": "^3.5"
+	},
+	"authors": [
+        {
+            "name": "lls_woods",
+            "email": "1300904522@qq.com",
+            "homepage": "http://www.whymust.xyz",
+            "role": "开发"
+        }
+    ],
+    "autoload" : {
+    	"files" : ["common/config.php","common/function.php"]
+    }
+
+}
