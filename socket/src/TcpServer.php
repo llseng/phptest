@@ -219,12 +219,89 @@ class TcpServer
 	public function getError()
 	{
 		//最后错误
-		$errcode = socket_last_error();
+        $errcode = socket_last_error();
 		//错误信息
 		$errmsg = socket_strerror($errcode);
 
 		return [$errcode, $errmsg];
 	}
+
+    /**
+     * @author llseng
+     * @date   2019-07-12
+     * @mail   1300904522@qq.com
+     * @link   http://www.gzqidong.cn
+     * @return resource[]       客户连接
+     */
+    public function getClients()
+    {
+        return $this->_sockets;
+    }
+
+    /**
+     * @author llseng
+     * @date   2019-07-12
+     * @mail   1300904522@qq.com
+     * @link   http://www.gzqidong.cn
+     * @return int                 客户端连接数
+     */
+    public function getClientCount()
+    {
+        return count( $this->_sockets );
+    }
+
+    /**
+     * @author llseng
+     * @date   2019-07-12
+     * @mail   1300904522@qq.com
+     * @link   http://www.gzqidong.cn
+     * @param  resource                 $sock 客户端连接
+     * @param  string                 $msg  消息
+     * @return int|false             发送字符数| 失败false
+     */
+    public function write($sock, $msg = "")
+    {
+        //不存在客户连接
+        if( !$this->isClient($sock) )
+
+        //发送消息
+        $result = socket_write($sock, $msg);
+
+        if( false === $result ) {
+            $this->_log(__FUNCTION__ . (int)$sock . " write $msg");
+        }
+
+        return $result;
+
+    }
+
+    /**
+     * @author llseng
+     * @date   2019-07-12
+     * @mail   1300904522@qq.com
+     * @link   http://www.gzqidong.cn
+     * @param  resource                 $sock socket连接
+     * @return boolean                  是否是客户端连接
+     * 检测是否是客户端连接
+     */ 
+    public function isClient($sock)
+    {
+        return isset($this->_sockets[(int)$sock]) ? $this->_sockets[(int)$sock] : false;
+    }
+
+    /**
+     * @author llseng
+     * @date   2019-07-12
+     * @mail   1300904522@qq.com
+     * @link   http://www.gzqidong.cn
+     * @param  resource                 $sock socket连接
+     * @return boolean                  是否
+     * 检测是否是服务器链接
+     */
+    public function isServer($sock)
+    {
+        return (int)$this->_socket === (int)$sock ? $this->_socket : false;
+    }
 
 	/**
 	 * @author llseng
@@ -265,6 +342,14 @@ class TcpServer
 		$this->_log(__FUNCTION__);
 	}
 
+    /**
+     * @author llseng
+     * @date   2019-07-12
+     * @mail   1300904522@qq.com
+     * @link   http://www.gzqidong.cn
+     * @return void                 
+     * 获取监听可操连接
+     */
 	private function _select()
 	{
 		//所有socket链接 包括 服务器
@@ -282,7 +367,7 @@ class TcpServer
 
 		foreach ($sockets as $k => $sock) {
 			//如果是服务器链接
-			if( $sock === $this->_socket )
+			if( $this->isServer($sock) )
 			{
 				//服务器可读操作
 				$this->_accept();
@@ -415,8 +500,8 @@ class TcpServer
 	 */
 	private function _close_client($sock)
 	{
-		//是否存在客户连接
-		if( !isset($this->_sockets[(int)$sock]) ) return ;
+		//不存在客户连接
+		if( !$this->isClient($sock) ) return ;
 
 		//触发客户端关闭事件
 		$this->_event("close", [$sock]);
