@@ -29,7 +29,6 @@ while ( $str = fgets(STDIN) ) {
 	$msg = "";
 	//$msg = socket_read($sock, 1024);
 	var_dump($msg = socket_read($sock, 1024));
-	var_dump($msg);
 	if( $msg === false ) break;
 
 fwrite(STDOUT, "str ");

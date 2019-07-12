@@ -10,6 +10,17 @@ class TcpServer
 	 */
 	const MAX_SELECT_ERR_NUM = 5;
 
+    /**
+     * 读取缓存大小
+     */
+    const READ_BUFFER_SIZE = 65535;
+
+    /**
+     * 测试状态
+     * @var integer
+     */
+    public $debug = 0;
+
 	/**
 	 * 监听地址
 	 * @var string
@@ -58,6 +69,12 @@ class TcpServer
 	 */
 	private $_events = [];
 
+    /**
+     * 客户连接读取长度
+     * @var int
+     */
+    private $_clientReadLen;
+
 	/**
 	 * @author llseng
 	 * @date   2019-07-11
@@ -78,6 +95,32 @@ class TcpServer
 		$this->_create();
 
 	}
+
+    /**
+     * @author llseng
+     * @date   2019-07-12
+     * @mail   1300904522@qq.com
+     * @link   http://www.gzqidong.cn
+     * @return int                 长度
+     * 获取客户信息最大长度
+     */
+    public function getClientReadLen()
+    {
+        return $this->_clientReadLen ?: static::READ_BUFFER_SIZE;
+    }
+
+    /**
+     * @author llseng
+     * @date   2019-07-12
+     * @mail   1300904522@qq.com
+     * @link   http://www.gzqidong.cn
+     * @param  int                  $length 长度
+     * 设置客户信息最大长度
+     */
+    public function setClientReadLen($length)
+    {
+        $this->_clientReadLen = (int)$length;
+    }
 
 	/**
 	 * @author llseng
@@ -262,7 +305,7 @@ class TcpServer
     public function write($sock, $msg = "")
     {
         //不存在客户连接
-        if( !$this->isClient($sock) )
+        if( !$this->isClient($sock) ) return false;
 
         //发送消息
         $result = socket_write($sock, $msg);
@@ -365,6 +408,8 @@ class TcpServer
 		//没有可操作连接
 		if( !$result ) return ;
 
+        $this->_log(__FUNCTION__ . " " . var_export([$sockets, $write, $except],true));
+
 		foreach ($sockets as $k => $sock) {
 			//如果是服务器链接
 			if( $this->isServer($sock) )
@@ -396,13 +441,42 @@ class TcpServer
 		$sock = socket_accept($this->_socket);
 		if( false === $sock )
 		{
-			$error = $this->getError();
-			var_dump($error);
+			$this->_log(__FUNCTION__);
 		}
 
 		//客户端连接处理
 		$this->_client_connect($sock);
 	}
+
+    /**
+     * @author llseng
+     * @date   2019-07-11
+     * @mail   1300904522@qq.com
+     * @link   http://www.gzqidong.cn
+     * @param  resource                 $sock 客户连接
+     * @return void
+     * 客户端可读操作 . 读取客户端发送信息
+     */
+    private function _read($sock)
+    {
+        $startTime = microtime(true)*10000;
+        //读取客户端发送的信息
+        $msg = socket_read($sock, $this->getClientReadLen() );
+
+        $endTime = microtime(true)*10000;
+
+        $this->_log("socket_read() spend time : " . round($endTime - $startTime, 4), false);
+
+        //连接异常
+        if( false === $msg ) 
+        {
+            //关闭客户端
+            return $this->_close_client($sock);
+        }
+
+        //处理客户发送信息
+        $this->_client_write($sock, $msg);
+    }
 
 	/**
 	 * @author llseng
@@ -415,37 +489,13 @@ class TcpServer
 	 */
 	private function _client_connect($sock)
 	{
-		$this->_log( (int)$sock . " connect");
+		$this->_log( (int)$sock . " connect", false);
 
 		//保存客户端连接
 		$this->_sockets[(int)$sock] = $sock;
 
 		//触发客户连接事件
 		$this->_event("connent", [$sock]);
-	}
-
-	/**
-	 * @author llseng
-	 * @date   2019-07-11
-	 * @mail   1300904522@qq.com
-	 * @link   http://www.gzqidong.cn
-	 * @param  resource                 $sock 客户连接
-	 * @return void
-	 * 客户端可读操作 . 读取客户端发送信息
-	 */
-	private function _read($sock)
-	{
-		//读取客户端发送的信息
-		$msg = socket_read($sock, 1024);
-		//连接异常
-		if( false === $msg ) 
-		{
-			//关闭客户端
-			return $this->_close_client($sock);
-		}
-
-		//处理客户发送信息
-		$this->_client_write($sock, $msg);
 	}
 
 	/**
@@ -460,7 +510,9 @@ class TcpServer
 	 */
 	private function _client_write($sock, $msg)
 	{
-		$this->_log( (int)$sock . $msg );
+        $this->write($sock, "\0");
+
+		$this->_log( (int)$sock ." write : ". $msg, false);
 
 		//触发事件
 		$this->_event("write", [$sock, $msg]);
@@ -570,17 +622,19 @@ class TcpServer
 	 * @mail   1300904522@qq.com
 	 * @link   http://www.gzqidong.cn
 	 * @param  string                 $msg 信息
+     * @param  bool                  $err 是否需要错误信息
 	 * @return void
 	 * 打印日志
 	 */
-	private function _log($msg = '')
+	private function _log($msg = '', $err = true)
 	{
 		//错误信息
-		$error = $this->getError();
+		$error = $err ? $this->getError() : [];
 
-		$this->_event("log",[$msg, var_export($error, true)]);
+		$this->_event("log",["log : " . $msg, $error]);
 
-		echo $msg . " : " . var_export($error, true) . "\r\n";
+        //debug开启
+		if( $this->debug ) echo "log : " . $msg . " : " . var_export($error, true) . "\r\n";
 
 	}
 

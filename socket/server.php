@@ -62,17 +62,17 @@ while ($errnum) {
 				$start_time = microtime(true) * 1000;
 				$log->addDebug("read start " . (int)$v);
 				//$msg = socket_read($v, 1024, PHP_NORMAL_READ);
-				$msg = socket_read($v, 1024);
+				$msg = socket_read($v, 3);
 				$end_time = microtime(true) * 1000;
 				$log->addDebug("read end " . (int)$v,[$start_time, $end_time, round($end_time-$start_time,4)]);
-
+/*
 				//返回数据表示收到
 				$w = socket_write($v, 'OK');
 				if( $w === false )
 				{
 					$log->addError( (int)$v . "发送错误",[socket_strerror(socket_last_error())] );
 				}
-
+*/
 				if( $msg === false )
 				{
 					$log->addError( (int)$v . "读取错误,关闭连接",[socket_strerror(socket_last_error())] );
@@ -80,10 +80,10 @@ while ($errnum) {
 					unset($socks[(int)$v]);
 				}
 				$log->addInfo("客户端发送信息", [(int)$v , $msg]);
-				if( $msg )
-				{
+				// if( $msg )
+				// {
 					echo (int)$v . " : " . $msg . "\r\n";
-				}
+				// }
 			}
 		}
 
