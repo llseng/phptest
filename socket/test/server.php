@@ -18,25 +18,57 @@ $splQueue = new SplQueue();
  */
 $readBuffer = [];
 
-$server = new TcpServer("127.0.0.1", 1997);
+
+
+//tcp服务器
+$server = new TcpServer("127.0.0.1", 1997, 1024);
 
 //$server->debug = 1;
 
-$server->setClientReadLen(5);
+//$server->setClientReadLen();
 
 //日志事件
 $server->on("log", function ($server ,$msg, $error){
-	/*
-	echo "\r\n---------start--------\r\n";
-	echo $msg . "\r\n";
-	var_export($error);
-	echo "\r\n----------------------\r\n";
-	*/
+
+	// echo "\r\n---------start--------\r\n";
+	// echo $msg . "\r\n";
+	// var_export($error);
+	// echo "\r\n----------------------\r\n";
+	socketLog("server", getmypid())->info($msg, $error);
 });
 
 //主事件
 $server->on("select", function ($server){
-	//sleep(1);
+	global $splQueue;
+
+	$num = 100;
+
+	while ( $num ) {
+		
+		if( !count($splQueue) )
+		{
+			break;
+		}
+
+		$data = json_decode( $splQueue->dequeue() , true);
+
+		if( !$data ) continue;
+
+		$file = isset( $data['file'] ) ? $data['file'] : '';
+		$name = isset( $data['name'] ) ? $data['name'] : 'tcpServer';
+		$msg = isset( $data['msg'] ) ? $data['msg'] : '';
+		$context = isset( $data['context'] ) ? $data['context'] : [];
+
+		if( socketLog($file, $name)->info($msg, $context) )
+		{
+			echo "Write Log OK.\r\n";
+		}else{
+			echo "Write Log FAIL.\r\n";
+		}
+
+		$num--;
+	}
+
 });
 
 //客户端发送事件
@@ -67,10 +99,6 @@ $server->on("write", function ($server, $sock, $msg){
 
 	$package = $readBuffer[(int)$sock] . $msg;
 
-	var_dump($$readBuffer[(int)$sock],1000000);
-	var_dump($msg,2000000);
-	var_dump($package,3000000);
-
 	while ( ($endPos = strpos($package, "\n")) !== false ){
 		//截取包
 		$data = trim(substr($package, 0, $endPos));
@@ -83,10 +111,11 @@ $server->on("write", function ($server, $sock, $msg){
 
 	$readBuffer[(int)$sock] = $package;
 
-	var_dump($readBuffer,$splQueue);
+	//var_dump($splQueue, $readBuffer);
 
 });
 
+//客户连接断开事件
 $server->on("close",function ($server, $sock)
 {
 	var_dump($sock,"close");
