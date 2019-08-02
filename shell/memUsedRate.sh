@@ -5,8 +5,10 @@ meminfo="/proc/meminfo"
 totalMem=`grep 'MemTotal' $meminfo | awk '{print $2}'`
 #闲置内存
 freeMem=`grep 'MemFree' $meminfo | awk '{print $2}'`
+#可用内存
+availableMem=`grep 'MemAvailable' $meminfo | awk '{print $2}'`
 #使用内存
-usedMem=`expr $totalMem - $freeMem`
+usedMem=`expr $totalMem - $availableMem`
 #内存使用率
 memUsedRate=`awk 'BEGIN{printf "%.0f",'$usedMem'/'$totalMem'*100}'`
 #是否超过80%
