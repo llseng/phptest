@@ -9,7 +9,7 @@ nowtime=`date +%H%M%S`
 getDatatime()
 {
 	datatime=`date +%Y-%m-%d.%H:%M:%S`
-	echo "DATATIME $datatime"
+	printf "$datatime "
 }
 
 getDatatime
