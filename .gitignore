@@ -2,3 +2,6 @@ vendor
 logs
 *.log
 composer.lock
+sftp-settings.json
+/*.sublime-project
+/*.sublime-workspace
