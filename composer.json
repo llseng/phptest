@@ -2,6 +2,7 @@
 	"require" : {
 		"php" : ">=7.0.0",
         "ext-mysqli" : "*",
+        "llseng/phptool": "*",
 		"monolog/monolog": "^1.24",
 		"workerman/workerman": "^3.5",
 		"workerman/gateway-worker": "^3.0"

@@ -3,5 +3,6 @@ logs
 *.log
 composer.lock
 sftp-settings.json
+sftp-config.json
 /*.sublime-project
 /*.sublime-workspace
