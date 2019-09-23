@@ -1,95 +1,30 @@
 <?php
-require_once __DIR__ . "/../vendor/autoload.php";
+require_once  __DIR__ . "/../vendor/autoload.php";
 
-var_dump( extension_loaded("swoole") );
-var_dump( phpversion("swoole") );
+use Llseng\Tool\Many;
+use Llseng\Tool\Queue;
 
-//队列
-global $SPL_QUEUE;
-$SPL_QUEUE = new SplQueue();
+$many = new Many\SwooleMany(4);
+$queue = new Queue\PhpQueue(10);
 
-function test($id = 0)
-{
-	global $SPL_QUEUE;
-
-	$num = 0;
-
-	while (count($SPL_QUEUE) < 100) {
-
-		$data = [
-			"id" => $id,
-			"msg" => uniqid(),
-		];
-
-		$SPL_QUEUE[] = $data;
-
-		$num++;
-
-		usleep(500000);
-
-	}
-
-	return $num;
-
+$a = 0;
+while ( !$queue->isFull() ) {
+	$queue->enQueue( ++$a );
 }
-
-function enqueue($id)
-{
-	global $SPL_QUEUE;
-
-	$data = [
-			"id" => $id,
-			"msg" => uniqid(),
-		];
-
-	$SPL_QUEUE[] = $data;
-}
-
-if( extension_loaded("swoole") )
-{
-	//延时函数底层替换
-	Swoole\Runtime::enableCoroutine(true);
-
-	global $chan;
-	$chan = new chan(4);
-
-	go(function(){
-		global $chan,$SPL_QUEUE;
-
-		$result = [];
-
-		for ($i=0; $i < 4; $i++) { 
-			$result[] = $chan->pop();
-		}
-
-		var_dump($result);
-
-		var_dump(count($SPL_QUEUE));
-
-		foreach ($SPL_QUEUE as $key => $value) {
-			var_dump($key);
-			var_export($value);
-			echo ">---------- \r\n";
-		}
-
-	});
-
-	for ($i=0; $i < 4; $i++) { 
-		go(function(){
-			global $chan;
-			$cid = \Swoole\Coroutine::getCid();
-			var_dump($cid);
-			$num = test($cid);
-			$chan->push([$cid=>$num]);
-		});
+var_dump($queue);
+$many->go(function($ser,$que){
+	var_dump( $ser->getMid() );
+	$list = [];
+	while ( count($que) ) {
+		$list[] = $que->deQueue();
 	}
+	return $list;
+	
+},$queue);
 
-}else{
-	test();
+$many->to(function($ser, $list){
+	var_dump( $ser->getSid() );
+	var_dump( $list );
+});
 
-	foreach ($SPL_QUEUE as $key => $value) {
-		var_dump($key);
-		var_export($value);
-		echo ">---------- \r\n";
-	}
-}
+$many->run();

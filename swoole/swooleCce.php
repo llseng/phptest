@@ -1,5 +1,5 @@
 <?php
-
+\swoole\Runtime::enableCoroutine(true,SWOOLE_HOOK_SLEEP);
 /**
  * 并发
  */
@@ -108,7 +108,7 @@ $many = new many(10);
 $many->go(function ($server,$a,$b,$c){
 	//var_dump($server,$a,$b,$c);
 	static $num = 0;
-	co::exec('sleep 1');
+	sleep(1);
 	return ++$num;
 },1,2,3);
 
