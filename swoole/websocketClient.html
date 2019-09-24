@@ -9,6 +9,115 @@
 	
 </body>
 <script type="text/javascript">
-	
+
+	if( ! 'WebSocket' in window ) {
+		alert( '浏览器不支持WebSocket' );
+	}
+
+	(function($){
+		$.config = {
+			"protocol": window.location.protocol == "https:" ? "wss" : "ws",
+			"host": window.location.host ? window.location.host : "127.0.0.1",
+			"port": 88,
+			"debug": true,
+			"data": {"token":"123456"}
+		};
+
+		$.parser = {
+			"encode": function($1) {
+				return JSON.stringify($1);
+			},
+			"decode": function($1) {
+				return JSON.parse($1);
+			}
+		};
+
+		$.connect = null;
+
+		$.link = function() {
+			var url = this.config.protocol + "://" + this.config.host + ":" + this.config.port;
+			var query = "?token=" + this.config.data.token;
+			this.connect = new WebSocket( url + query );
+			//open	Socket.onopen	连接建立时触发
+			this.connect.onopen = function(e){
+				$.logger( "onopen" );
+				$.logger( e );
+				$.onopen( e );
+			}
+			//message	Socket.onmessage	客户端接收服务端数据时触发
+			this.connect.onmessage = function(e){
+				$.logger( "onmessage" );
+				$.logger( e );
+				$.onmessage( e );
+			}
+			//error	Socket.onerror	通信发生错误时触发
+			this.connect.onerror = function(e){
+				$.logger( "onerror" );
+				$.logger( e );
+				$.onerror( e );
+			}
+			//close	Socket.onclose	连接关闭时触发
+			this.connect.onclose = function(e){
+				$.logger( "onclose" );
+				$.logger( e );
+				$.onclose( e );
+			}
+		}
+
+		$.logger = function($1) {
+			if( this.config.debug ) {
+				console.log( $1 );
+			}
+
+			return ;
+		}
+
+		$.onopen = function($1) {
+		}
+
+		$.onmessage = function($1) {
+		}
+
+		$.onerror = function($1) {
+		}
+
+		$.onclose = function($1) {
+		}
+
+		$.send = function($1) {
+			this.logger( "send" );
+			this.logger( $1 );
+
+			if( this.connect.readyState !== 1 )
+			{
+				this.logger( 'WebSocket不可通讯' );
+				return ;
+			}
+
+			try{
+				var data = this.parser.encode( $1 );
+			}catch(err) {
+				this.logger( err.name + "-" + err.message );
+				return;
+			}
+
+			return this.connect.send( data );
+		}
+
+		$.close = function($1) {
+			this.logger( "close" );
+			this.logger( $1 );
+
+			return this.connect.close();
+		}
+
+	})(WS = {})
+
+	WS.config.host = "129.28.84.230";
+
+	WS.onmessage = function(e) {
+		console.log(e.data);
+	}
+
 </script>
 </html>
