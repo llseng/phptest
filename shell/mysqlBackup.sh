@@ -41,8 +41,8 @@ for dbname in ${dbnames[@]}; do
 	backupFile="${bcakupPath}/${nowdate}-${nowtime}_${dbname}.sql"
 	#压缩文件
 	tarFile="${bcakupPath}/${nowdate}-${nowtime}_${dbname}_sql.tgz"
-	#备份命令 --skip-tz-utc禁止timestmp时区装换
-	`mysqldump -u${dbuser} -p${dbpwd} --skip-tz-utc ${dbname} > ${backupFile}`
+	#备份命令 --skip-tz-utc禁止timestmp时区装换 -R导出过程
+	`mysqldump -u${dbuser} -p${dbpwd} -R --skip-tz-utc ${dbname} > ${backupFile}`
 
 	getDatatime
 	echo $backupFile
