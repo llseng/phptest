@@ -1,13 +1,15 @@
 {
-	"require" : {
-		"php" : ">=7.0.0",
+    "require" : {
+        "php" : ">=7.0.0",
         "ext-mysqli" : "*",
         "llseng/phptool": "*",
-		"monolog/monolog": "^1.24",
-		"workerman/workerman": "^3.5",
-		"workerman/gateway-worker": "^3.0"
-	},
-	"authors": [
+        "doctrine/cache": "1.8.0",
+        "monolog/monolog": "^1.24",
+        "workerman/workerman": "^3.5",
+        "workerman/gateway-worker": "^3.0",
+        "thingengineer/mysqli-database-class": "^2.9"
+    },
+    "authors": [
         {
             "name": "lls_woods",
             "email": "1300904522@qq.com",
@@ -16,7 +18,7 @@
         }
     ],
     "autoload" : {
-    	"files" : ["common/config.php","common/function.php"]
+        "files" : ["common/config.php","common/function.php"]
     }
 
 }
