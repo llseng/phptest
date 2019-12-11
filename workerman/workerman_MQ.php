@@ -34,9 +34,8 @@ function deal_handler() {
     $tmp_date = date('YmdH00');
     if( $tmp_date != $now_date ) {
         //关闭当前日志文件句柄 ) 不然删除不了日志文件,提示文件被程序打开
-        foreach ($Logger->getHandlers() as $val) {
-            $val->close();
-        }
+        $Logger->close();
+        //更新日志文件句柄
         $StreamHandler = new StreamHandler( __DIR__. "/logs/MQ". $tmp_date. ".log" );
         $Logger->setHandlers( [$StreamHandler] );
         $now_date = $tmp_date;

@@ -82,7 +82,17 @@ class workerman_mq_client
         $result = substr( $this->tmp, 0, $pos );
         $this->tmp = substr( $this->tmp, $pos+1 );
 
-        return trim( $result );
+        $result = trim( $result );
+
+        if( $result === "success" ){
+            return true;
+        }
+
+        if( $result === "fail" ){
+            return false;
+        }
+
+        return $result;
     }
 
     private function deal_mag() {
