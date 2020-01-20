@@ -52,3 +52,15 @@ function socketLog($file = "", $name = "socket")
 
     return $Logger[$file];
 }
+
+//日志
+function get_logger( $name , $file = '') {
+    static $Loggers = [];
+    if( empty( $Loggers[ $name ] ) ) {
+        $Logger = new Logger( $name ) ;
+        $StreamHandler = new StreamHandler( LOGS_PATH . DS . date( "Ym" ). DS. date( "d" ). $file. ".log" );
+        $Logger->pushHandler( $StreamHandler );
+        $Loggers[ $name ] = $Logger;
+    }
+    return $Loggers[ $name ];
+}
