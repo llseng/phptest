@@ -64,3 +64,22 @@ function get_logger( $name , $file = '') {
     }
     return $Loggers[ $name ];
 }
+
+//十进制转换
+function decTo( $number, $bit = 2 ) {
+	$bitstr = "0123456789abcdefghijklmnopqrstuvwxyz";//ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	$maxbit = strlen( $bitstr );
+	$bit > $maxbit && $bit = $maxbit;
+	
+	$mods = [];
+	$modstrs = [];
+	
+	while( $number ) {
+		$mod = bcmod( $number, $bit );
+		$number = bcdiv( bcsub( $number, $mod ), $bit );
+		array_unshift( $mods, $mod );
+		array_unshift( $modstrs, $bitstr[ $mod ] );
+	}
+	
+	return join( $modstrs );
+}
