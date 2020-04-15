@@ -2,7 +2,7 @@
 /**
 策略工厂测试
 **/
-
+error_reporting( E_ALL );
 //支付策略
 interface PayStrategy {
 	//初始化配置
