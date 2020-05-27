@@ -2,15 +2,12 @@
 
 $file = "rush_list.log";
 
-$amounts = file( $file )?: [];
-
-empty( $amounts ) && die('amounts empty');
-
+$amounts = file( $file );
 $number = array_sum( $amounts );
 $cont = count( $amounts );
 // 中奖签
 $winning = mt_rand( 1, $number );
-$winning = 2;
+//$winning = 79706;
 
 $start_key = 0;
 $end_key = $cont;
@@ -37,12 +34,7 @@ do{
 		//中奖签比当前签小 当前签设置为结束
 		$end_key = $now_key;
 	}
-
-	if( $end_key == $start_key ) {
-		$winning_li = $li;
-		break;
-	}
-
+	
 	$diff_cont = $end_key - $start_key;
 	$now_key = $end_key - round( $diff_cont / 2 );
 	
