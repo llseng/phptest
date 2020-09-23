@@ -3,7 +3,7 @@
 # @Author: llseng
 # @Date:   2020-09-23 17:44:12
 # @Last Modified by:   llseng
-# @Last Modified time: 2020-09-23 19:16:52
+# @Last Modified time: 2020-09-23 19:31:02
 
 # [ set -u ]遇到不存在的变量终止脚本的执行
 set -o nounset
@@ -14,25 +14,23 @@ set -o nounset
 # 当前脚本地址
 CurPath=$(cd $(dirname $0); pwd)
 
+# 开启调试
+OnDebug() { set -x; }
+
+# 关闭调试
+OffDebug() { set +x; }
+
 # 开启使用未定义变量终止
-OnUnset() {
-    set -u
-}
+OnUnset() { set -u; }
 
 # 关闭使用未定义变量终止
-OffUnset() {
-    set +u
-}
+OffUnset() { set +u; }
 
 # 开启出错时终止
-OnErrexit() {
-    set -e
-}
+OnErrexit() { set -e; }
 
 # 关闭出错时终止
-OffErrexit() {
-    set +e
-}
+OffErrexit() { set +e; }
 
 # 打印日志
 # $@ 信息
