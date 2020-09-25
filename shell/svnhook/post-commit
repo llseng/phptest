@@ -1,0 +1,47 @@
+#!/bin/sh
+
+REPOS="$1"
+REV="$2"
+
+SVNLOOK=/usr/bin/svnlook
+
+# 日志信息
+commit_log=$( $SVNLOOK log -r "$REV" "$REPOS" )
+# 变动文件
+commit_changed=$( $SVNLOOK changed -r "$REV" "$REPOS" | sed 's/   /:/' )
+# 作者
+commit_author=$( $SVNLOOK author -r "$REV" "$REPOS" )
+
+# 非后台源码跳过
+echo $commit_changed | grep -P '^\w+:houtai' > /dev/null || exit 0
+
+# 当前目录
+CURPATH=$( cd $( dirname $0 ); pwd )
+# 引入函数文件
+. $CURPATH'/./funcs.sh'
+# 日志文件
+logFile=$CURPATH'/logs/'$(date +%Y-%m-%d)'.log'
+touch $logFile
+
+SYNC_STATE=0
+
+echo $commit_log | grep -P "^sync(\([\w\,]*\))?:" > /dev/null\
+ && SYNC_STATE=1
+# 触发同步脚本
+if [[ $SYNC_STATE -gt 0 ]]; then
+
+    STATE=0
+
+    echo $commit_changed | grep -P "^\w+:指定目录" > /dev/null\
+     && STATE=1 
+
+    if [[ $STATE -gt 0 ]]; then
+        # WriteLog $logFile 'author:'$commit_author $REV '信息'
+        # 处理程序
+        # 重置
+    fi
+
+    STATE=0
+fi
+
+exit 0

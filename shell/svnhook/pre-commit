@@ -1,0 +1,44 @@
+#!/bin/bash
+
+REPOS="$1"
+TXN="$2"
+
+SVNLOOK=/usr/bin/svnlook
+
+# 日志信息
+commit_log=$( $SVNLOOK log -t "$TXN" "$REPOS" )
+# 变动文件
+commit_changed=$( $SVNLOOK changed -t "$TXN" "$REPOS" | sed 's/   /:/' )
+# 作者
+commit_author=$( $SVNLOOK author -t "$TXN" "$REPOS" )
+
+# 非后台源码跳过
+#echo $commit_changed | grep -P '^\w+:houtai' > /dev/null || exit 0
+
+# 当前目录
+CURPATH=$( cd $( dirname $0 ); pwd )
+# 引入函数文件
+. $CURPATH'/./funcs.sh'
+# 日志文件
+logFile=$CURPATH'/logs/'$(date +%Y-%m-%d)'.log'
+touch $logFile
+
+STATUS=0
+#日志信息控制
+echo $commit_log | grep -P "\S+" > /dev/null\
+ || let STATUS++
+if [[ $STATUS -gt 0 ]]; then
+    WriteLog $logFile 'author:'$commit_author $TXN '未填写日志信息'
+    echo -e "请填写日志信息" 1>&2
+    exit 1
+fi
+
+echo $commit_log | grep -P "^\w+(\([\w\,]*\))?:\S+$" > /dev/null\
+ || let STATUS++
+if [[ $STATUS -gt 0 ]]; then
+    WriteLog $logFile 'author:'$commit_author $TXN '日志信息不符合规范'
+    echo -e "日志信息请符合规范 '<类型>(<范围[可空]>):<描述>'" 1>&2
+    exit 1
+fi
+
+exit 0
